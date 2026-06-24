@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Waypoint — AI Travel Planner</title>
+<style>
+:root {
+  --navy: #0d1b2a;
+  --navy-mid: #1b2d42;
+  --sky: #0ea5e9;
+  --orange: #f97316;
+  --amber: #f59e0b;
+  --emerald: #10b981;
+  --white: #ffffff;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-700: #334155;
+  --gray-900: #0f172a;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05);
+  --shadow-xl: 0 20px 25px rgba(0,0,0,.15),0 10px 10px rgba(0,0,0,.04);
+  --radius: 16px;
+  --font: -apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--gray-50);color:var(--gray-900);line-height:1.6}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(13,27,42,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--sky),var(--orange));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-logo-text{font-size:1.2rem;font-weight:800;color:var(--white);letter-spacing:-.02em}
+.nav-btn{background:var(--orange);color:#fff;border:none;padding:8px 20px;border-radius:100px;font-size:.875rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s}
+.nav-btn:hover{background:#ea6c10;transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:100vh;background:linear-gradient(160deg,#0d1b2a 0%,#1b2d42 55%,#0d2137 100%);display:flex;align-items:center;justify-content:center;padding:100px 2rem 80px;position:relative;overflow:hidden}
+.hero-glow{position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(14,165,233,.09) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(249,115,22,.07) 0%,transparent 50%),radial-gradient(circle at 60% 80%,rgba(14,165,233,.06) 0%,transparent 40%)}
+.hero-dots{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.055) 1px,transparent 1px);background-size:42px 42px}
+.hero-content{position:relative;z-index:1;text-align:center;max-width:720px;animation:fadeUp .8s ease both}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.28);color:#7dd3fc;padding:6px 16px;border-radius:100px;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:28px}
+.hero-title{font-size:clamp(2.4rem,6vw,4rem);font-weight:800;color:#fff;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.hero-title span{background:linear-gradient(135deg,#7dd3fc,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.1rem;color:rgba(255,255,255,.58);line-height:1.75;max-width:540px;margin:0 auto 40px}
+.hero-cta{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--orange),#ea580c);color:#fff;border:none;padding:16px 36px;border-radius:100px;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 4px 24px rgba(249,115,22,.4);transition:all .25s}
+.hero-cta:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(249,115,22,.5)}
+.hero-stats{display:flex;justify-content:center;gap:48px;margin-top:56px;padding-top:36px;border-top:1px solid rgba(255,255,255,.1)}
+.hero-stat-num{font-size:1.75rem;font-weight:800;color:#fff;letter-spacing:-.03em}
+.hero-stat-label{font-size:.78rem;color:rgba(255,255,255,.4);margin-top:2px}
+
+/* HOW IT WORKS */
+.section{padding:96px 2rem;max-width:1100px;margin:0 auto}
+.eyebrow{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:14px}
+.section-title{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;color:var(--gray-900);letter-spacing:-.03em;line-height:1.2;margin-bottom:14px}
+.section-sub{font-size:1rem;color:var(--gray-500);line-height:1.75;max-width:480px}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:56px}
+.step-card{background:#fff;border-radius:var(--radius);padding:36px 28px;box-shadow:var(--shadow-md);border:1px solid var(--gray-200);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden}
+.step-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.step-card:nth-child(1)::before{background:linear-gradient(90deg,#0ea5e9,#38bdf8)}
+.step-card:nth-child(2)::before{background:linear-gradient(90deg,#f97316,#fb923c)}
+.step-card:nth-child(3)::before{background:linear-gradient(90deg,#10b981,#34d399)}
+.step-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-xl)}
+.step-num{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--gray-400);margin-bottom:18px}
+.step-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:18px}
+.step-card:nth-child(1) .step-icon{background:rgba(14,165,233,.1)}
+.step-card:nth-child(2) .step-icon{background:rgba(249,115,22,.1)}
+.step-card:nth-child(3) .step-icon{background:rgba(16,185,129,.1)}
+.step-title{font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:8px}
+.step-desc{font-size:.9rem;color:var(--gray-500);line-height:1.65}
+
+/* FORM SECTION */
+.form-section{background:linear-gradient(160deg,#0d1b2a,#1b2d42);padding:96px 2rem}
+.form-wrap{max-width:660px;margin:0 auto}
+.form-header{text-align:center;margin-bottom:44px}
+.form-header .section-title{color:#fff}
+.form-header .section-sub{color:rgba(255,255,255,.52);margin:0 auto}
+.form-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:40px;backdrop-filter:blur(12px)}
+
+/* Progress */
+.progress{display:flex;align-items:center;margin-bottom:40px}
+.pdot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;transition:all .3s;border:2px solid rgba(255,255,255,.2);color:rgba(255,255,255,.4);background:transparent}
+.pdot.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.pdot.done{background:var(--emerald);border-color:var(--emerald);color:#fff}
+.pline{flex:1;height:2px;background:rgba(255,255,255,.1);transition:background .3s}
+.pline.done{background:var(--emerald)}
+
+/* Steps */
+.fstep{display:none;animation:fadeIn .3s ease}
+.fstep.active{display:block}
+.fstep-title{font-size:1.25rem;font-weight:700;color:#fff;margin-bottom:6px}
+.fstep-sub{font-size:.88rem;color:rgba(255,255,255,.48);margin-bottom:28px}
+
+/* Traveler grid */
+.traveler-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+.traveler-btn{background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);border-radius:14px;padding:20px 16px;cursor:pointer;transition:all .2s;text-align:center;color:rgba(255,255,255,.65);font-family:var(--font)}
+.traveler-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+.traveler-btn.sel{background:rgba(249,115,22,.15);border-color:var(--orange);color:#fff}
+.traveler-icon{font-size:28px;margin-bottom:8px}
+.traveler-label{font-size:.9rem;font-weight:600}
+
+/* Inputs */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.fgroup{display:flex;flex-direction:column;gap:7px}
+.fgroup.full{grid-column:1/-1}
+.flabel{font-size:.78rem;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em}
+.finput{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:10px;padding:12px 16px;color:#fff;font-size:.95rem;font-family:var(--font);transition:border-color .2s;outline:none;width:100%}
+.finput::placeholder{color:rgba(255,255,255,.28)}
+.finput:focus{border-color:var(--sky)}
+.finput option{background:#1b2d42;color:#fff}
+
+/* Style tags */
+.style-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+.style-tag{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.12);border-radius:100px;padding:9px 18px;cursor:pointer;font-size:.88rem;font-weight:600;color:rgba(255,255,255,.58);transition:all .2s;display:flex;align-items:center;gap:6px;font-family:var(--font)}
+.style-tag:hover{background:rgba(255,255,255,.1);color:#fff}
+.style-tag.sel{background:rgba(14,165,233,.18);border-color:var(--sky);color:#7dd3fc}
+
+/* Destination toggle */
+.dest-toggle{display:flex;background:rgba(255,255,255,.05);border-radius:12px;padding:4px;border:1px solid rgba(255,255,255,.1);margin-top:8px;margin-bottom:18px}
+.dest-toggle button{flex:1;padding:10px;border:none;border-radius:9px;background:transparent;color:rgba(255,255,255,.48);font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.dest-toggle button.active{background:var(--sky);color:#fff}
+
+/* Form nav */
+.fnav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.08)}
+.btn-back{background:transparent;border:1.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.58);padding:11px 22px;border-radius:100px;font-size:.88rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .2s}
+.btn-back:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.btn-next{background:linear-gradient(135deg,var(--orange),#ea580c);border:none;color:#fff;padding:12px 30px;border-radius:100px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .2s;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(249,115,22,.3)}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(249,115,22,.42)}
+.btn-generate{background:linear-gradient(135deg,#0ea5e9,#0284c7);box-shadow:0 4px 16px rgba(14,165,233,.3)}
+.btn-generate:hover{box-shadow:0 6px 20px rgba(14,165,233,.45)}
+
+/* Generating */
+.gen-overlay{display:none;text-align:center;padding:56px 20px}
+.gen-overlay.active{display:block}
+.spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--sky);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+.gen-text{font-size:1rem;color:rgba(255,255,255,.6);font-weight:500}
+.gen-sub{font-size:.85rem;color:rgba(255,255,255,.32);margin-top:6px}
+
+/* RESULTS */
+.results{padding:80px 2rem 100px;max-width:1100px;margin:0 auto}
+.results-header{text-align:center;margin-bottom:64px}
+.results-header .section-sub{margin:0 auto}
+
+/* Filter bar */
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filter-label{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);margin-right:2px}
+.ftab{background:transparent;border:1.5px solid var(--gray-200);border-radius:100px;padding:6px 15px;font-size:.8rem;font-weight:600;color:var(--gray-500);cursor:pointer;transition:all .2s;font-family:var(--font)}
+.ftab:hover{border-color:var(--gray-400);color:var(--gray-700)}
+.ftab.active{background:var(--gray-900);border-color:var(--gray-900);color:#fff}
+.ftab.budget.active{background:var(--emerald);border-color:var(--emerald)}
+.ftab.mid.active{background:var(--sky);border-color:var(--sky)}
+.ftab.luxury.active{background:var(--amber);border-color:var(--amber)}
+
+/* Result sections */
+.rsec{margin-bottom:72px}
+.rsec-hd{display:flex;align-items:baseline;gap:12px;margin-bottom:24px}
+.rsec-title{font-size:1.35rem;font-weight:800;color:var(--gray-900);letter-spacing:-.02em}
+.rsec-count{font-size:.82rem;color:var(--gray-400)}
+
+/* Destination cards */
+.dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.dest-card{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-lg);transition:transform .2s,box-shadow .2s;background:#fff;border:1px solid var(--gray-200);cursor:pointer}
+.dest-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-xl)}
+.dest-img{height:180px;position:relative}
+.dest-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 60%)}
+.dest-img-1{background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)}
+.dest-img-2{background:linear-gradient(135deg,#2d5a27,#1a3a1a,#0d2d0d)}
+.dest-img-3{background:linear-gradient(135deg,#2d1b69,#1a0a3c,#3d0b6c)}
+.dest-flag{position:absolute;bottom:16px;left:20px;z-index:1;font-size:2rem}
+.dest-badge{position:absolute;top:16px;right:16px;z-index:1;background:rgba(16,185,129,.9);color:#fff;padding:4px 12px;border-radius:100px;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;backdrop-filter:blur(4px)}
+.dest-body{padding:20px}
+.dest-name{font-size:1.18rem;font-weight:800;color:var(--gray-900);letter-spacing:-.02em;margin-bottom:6px}
+.dest-why{font-size:.84rem;color:var(--gray-500);line-height:1.6;margin-bottom:16px}
+.dest-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.dstat{background:var(--gray-50);border-radius:8px;padding:10px 12px}
+.dstat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);font-weight:600;margin-bottom:2px}
+.dstat-val{font-size:.9rem;font-weight:700;color:var(--gray-900)}
+.dest-highlights{display:flex;flex-direction:column;gap:5px}
+.dest-hl{font-size:.82rem;color:#475569;display:flex;align-items:flex-start;gap:8px}
+.dest-hl::before{content:'→';color:var(--orange);font-weight:700;flex-shrink:0}
+.dest-footer{padding:14px 20px;border-top:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center}
+.season-badge{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--gray-500)}
+.sdot{width:8px;height:8px;border-radius:50%}
+.sdot-ideal{background:var(--emerald)}
+.sdot-shoulder{background:var(--amber)}
+.dest-select{background:var(--orange);color:#fff;border:none;padding:8px 18px;border-radius:100px;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.dest-select:hover{background:#ea6c10}
+.dest-select.chosen{background:var(--emerald)}
+
+/* Activity cards */
+.act-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:16px}
+.act-card{background:#fff;border-radius:12px;padding:20px;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);transition:all .2s}
+.act-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.act-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.type-badge{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 10px;border-radius:100px}
+.tb-food{background:rgba(249,115,22,.12);color:#ea580c}
+.tb-culture{background:rgba(139,92,246,.12);color:#7c3aed}
+.tb-adventure{background:rgba(16,185,129,.12);color:#059669}
+.tb-relaxation{background:rgba(14,165,233,.12);color:#0284c7}
+.tb-nightlife{background:rgba(236,72,153,.12);color:#be185d}
+.tb-sightseeing{background:rgba(245,158,11,.12);color:#b45309}
+.price-badge{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:100px}
+.pb-budget{background:rgba(16,185,129,.12);color:#059669}
+.pb-mid{background:rgba(14,165,233,.12);color:#0284c7}
+.pb-luxury{background:rgba(245,158,11,.12);color:#b45309}
+.act-name{font-size:.98rem;font-weight:700;color:var(--gray-900);margin-bottom:6px}
+.act-why{font-size:.82rem;color:var(--gray-500);line-height:1.55;margin-bottom:14px}
+.act-footer{display:flex;justify-content:space-between;align-items:center}
+.act-cost{font-size:.95rem;font-weight:800;color:var(--gray-900)}
+.act-link{font-size:.76rem;color:var(--sky);text-decoration:none;font-weight:600}
+.act-link:hover{text-decoration:underline}
+
+/* Hotel cards */
+.hotel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.hotel-card{background:#fff;border-radius:12px;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);overflow:hidden;transition:all .2s}
+.hotel-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.hotel-accent{height:4px}
+.hbudget .hotel-accent{background:var(--emerald)}
+.hmid .hotel-accent{background:var(--sky)}
+.hluxury .hotel-accent{background:var(--amber)}
+.hotel-body{padding:20px}
+.hotel-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.hotel-name{font-size:1rem;font-weight:700;color:var(--gray-900)}
+.hotel-rate-num{font-size:1.1rem;font-weight:800;color:var(--gray-900);text-align:right}
+.hotel-rate-label{font-size:.7rem;color:var(--gray-400);text-align:right}
+.hotel-loc{font-size:.82rem;color:var(--gray-500);margin-bottom:8px}
+.hotel-for{font-size:.8rem;color:var(--gray-500);margin-bottom:16px}
+.hotel-for strong{color:var(--gray-700)}
+.hotel-btn{width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--gray-200);background:transparent;font-size:.85rem;font-weight:600;color:var(--gray-700);cursor:pointer;font-family:var(--font);transition:all .2s}
+.hotel-btn:hover{background:var(--gray-900);border-color:var(--gray-900);color:#fff}
+
+/* Itinerary */
+.itin-days{display:flex;flex-direction:column;gap:14px}
+.day-card{background:#fff;border-radius:12px;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);overflow:hidden}
+.day-hd{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;cursor:pointer;transition:background .2s;user-select:none}
+.day-hd:hover{background:var(--gray-50)}
+.day-hd-left{display:flex;align-items:center;gap:14px}
+.day-num{width:38px;height:38px;border-radius:10px;background:var(--gray-900);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;flex-shrink:0}
+.day-theme{font-size:.98rem;font-weight:700;color:var(--gray-900)}
+.day-spend{font-size:.78rem;color:var(--gray-400);margin-top:1px}
+.day-chevron{color:var(--gray-400);transition:transform .25s;font-size:.75rem}
+.day-card.open .day-chevron{transform:rotate(180deg)}
+.day-body{display:none;padding:0 22px 22px;border-top:1px solid var(--gray-100)}
+.day-card.open .day-body{display:block}
+.day-slot{display:grid;grid-template-columns:86px 1fr auto;gap:12px;align-items:start;padding:13px 0;border-bottom:1px solid var(--gray-100)}
+.day-slot:last-child{border-bottom:none}
+.slot-time{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);padding-top:2px}
+.slot-act{font-size:.9rem;font-weight:600;color:var(--gray-900)}
+.slot-notes{font-size:.78rem;color:var(--gray-500);margin-top:3px;line-height:1.5}
+.slot-cost{font-size:.86rem;font-weight:700;color:var(--gray-700);white-space:nowrap}
+
+/* Budget table */
+.budget-wrap{background:#fff;border-radius:var(--radius);border:1px solid var(--gray-200);overflow:hidden;box-shadow:var(--shadow-md)}
+table.btable{width:100%;border-collapse:collapse}
+.btable th{padding:14px 20px;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;text-align:left}
+.btable th:first-child{color:var(--gray-500);background:var(--gray-50)}
+.btable th.bc{background:rgba(16,185,129,.07);color:#059669}
+.btable th.mc{background:rgba(14,165,233,.07);color:#0284c7}
+.btable th.lc{background:rgba(245,158,11,.07);color:#b45309}
+.btable td{padding:13px 20px;font-size:.9rem;border-top:1px solid var(--gray-100)}
+.btable td:first-child{color:var(--gray-700);font-weight:500}
+.btable td.bc{background:rgba(16,185,129,.03);color:#065f46;font-weight:600}
+.btable td.mc{background:rgba(14,165,233,.03);color:#0c4a6e;font-weight:600}
+.btable td.lc{background:rgba(245,158,11,.03);color:#78350f;font-weight:600}
+.btable tr.total td{font-weight:800;font-size:.98rem;background:var(--gray-50)}
+.btable tr.total td.bc{background:rgba(16,185,129,.1);color:#065f46}
+.btable tr.total td.mc{background:rgba(14,165,233,.1);color:#0c4a6e}
+.btable tr.total td.lc{background:rgba(245,158,11,.1);color:#78350f}
+.over-tag{display:inline-block;background:rgba(239,68,68,.1);color:#dc2626;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:100px;margin-left:6px}
+
+/* Footer */
+.footer{background:var(--gray-900);padding:48px 2rem;text-align:center}
+.footer-logo{font-size:1.2rem;font-weight:800;color:#fff;letter-spacing:-.02em;margin-bottom:10px}
+.footer-text{font-size:.82rem;color:rgba(255,255,255,.3)}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:640px){
+  .form-row{grid-template-columns:1fr}
+  .hero-stats{gap:24px}
+  .form-card{padding:24px}
+  .btable th,.btable td{padding:10px 12px;font-size:.8rem}
+  .day-slot{grid-template-columns:68px 1fr}
+  .slot-cost{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-mark">✈</div>
+    <span class="nav-logo-text">Waypoint</span>
+  </a>
+  <a href="#planner" class="nav-btn">Plan My Trip</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-content">
+    <div class="hero-badge">✦ AI-Powered Travel Planning</div>
+    <h1 class="hero-title">Your next adventure,<br><span>planned for you.</span></h1>
+    <p class="hero-sub">Tell us about your trip — or let us pick the destination. We'll build a personalized itinerary, curated activities, hotel picks, and a full budget breakdown in minutes.</p>
+    <a href="#planner" class="hero-cta">Start Planning <span>→</span></a>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">50+</div>
+        <div class="hero-stat-label">Destinations</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">7</div>
+        <div class="hero-stat-label">Travel styles</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">3</div>
+        <div class="hero-stat-label">Budget tiers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<div class="section">
+  <p class="eyebrow">✦ How it works</p>
+  <h2 class="section-title">From preferences<br>to full itinerary</h2>
+  <p class="section-sub">Three steps from blank page to a complete trip plan — tailored to your group, budget, and style.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">Step 01</div>
+      <div class="step-icon">🎯</div>
+      <h3 class="step-title">Share your preferences</h3>
+      <p class="step-desc">Tell us who's traveling, your budget, trip length, travel style, and when you want to go. Takes about 60 seconds.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">Step 02</div>
+      <div class="step-icon">🗺️</div>
+      <h3 class="step-title">Get destination picks</h3>
+      <p class="step-desc">We surface 3–5 destinations that fit your style and budget — with flight costs, weather ratings, and highlight activities for each.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">Step 03</div>
+      <div class="step-icon">📋</div>
+      <h3 class="step-title">Receive your itinerary</h3>
+      <p class="step-desc">A full day-by-day plan with activities, hotel options across all budget tiers, and a complete cost breakdown — ready to export.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FORM -->
+<section class="form-section" id="planner">
+  <div class="form-wrap">
+    <div class="form-header">
+      <p class="eyebrow" style="color:rgba(14,165,233,.9);justify-content:center;display:flex">✦ Trip Planner</p>
+      <h2 class="section-title">Build your trip</h2>
+      <p class="section-sub">Answer a few questions and we'll do the rest.</p>
+    </div>
+
+    <div class="form-card">
+      <!-- Progress -->
+      <div class="progress">
+        <div class="pdot active" id="d1">1</div>
+        <div class="pline" id="l1"></div>
+        <div class="pdot" id="d2">2</div>
+        <div class="pline" id="l2"></div>
+        <div class="pdot" id="d3">3</div>
+        <div class="pline" id="l3"></div>
+        <div class="pdot" id="d4">4</div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="fstep active" id="s1">
+        <h3 class="fstep-title">Who's traveling?</h3>
+        <p class="fstep-sub">Select the option that best describes your group.</p>
+        <div class="traveler-grid">
+          <button class="traveler-btn" onclick="selTraveler(this,'solo')"><div class="traveler-icon">🧳</div><div class="traveler-label">Solo</div></button>
+          <button class="traveler-btn" onclick="selTraveler(this,'couple')"><div class="traveler-icon">💑</div><div class="traveler-label">Couple</div></button>
+          <button class="traveler-btn" onclick="selTraveler(this,'friends')"><div class="traveler-icon">👯</div><div class="traveler-label">Friend Group</div></button>
+          <button class="traveler-btn" onclick="selTraveler(this,'family')"><div class="traveler-icon">👨‍👩‍👧‍👦</div><div class="traveler-label">Family</div></button>
+        </div>
+        <div id="ages-group" style="display:none;margin-bottom:20px">
+          <div class="fgroup">
+            <label class="flabel">Children's ages (comma-separated)</label>
+            <input class="finput" type="text" placeholder="e.g. 4, 8, 12" id="ages">
+          </div>
+        </div>
+        <div class="fnav"><div></div><button class="btn-next" onclick="next(1)">Next →</button></div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="fstep" id="s2">
+        <h3 class="fstep-title">Budget & duration</h3>
+        <p class="fstep-sub">Give us a total budget and how long you're going for.</p>
+        <div class="form-row">
+          <div class="fgroup">
+            <label class="flabel">Total budget (USD)</label>
+            <input class="finput" type="number" placeholder="e.g. 4000" id="budget" min="0">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Trip length (days)</label>
+            <input class="finput" type="number" placeholder="e.g. 7" id="trip-days" min="1" max="90">
+          </div>
+        </div>
+        <div class="fgroup" style="margin-bottom:8px">
+          <label class="flabel">Number of travelers</label>
+          <input class="finput" type="number" placeholder="e.g. 2" id="num-travelers" min="1">
+        </div>
+        <div class="fnav"><button class="btn-back" onclick="prev(2)">← Back</button><button class="btn-next" onclick="next(2)">Next →</button></div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="fstep" id="s3">
+        <h3 class="fstep-title">What's your travel style?</h3>
+        <p class="fstep-sub">Pick one or more — we'll use these to tailor every recommendation.</p>
+        <div class="style-grid">
+          <button class="style-tag" onclick="togStyle(this)">💍 Honeymoon</button>
+          <button class="style-tag" onclick="togStyle(this)">🧗 Adventure</button>
+          <button class="style-tag" onclick="togStyle(this)">🍜 Food</button>
+          <button class="style-tag" onclick="togStyle(this)">🎉 Nightlife</button>
+          <button class="style-tag" onclick="togStyle(this)">🏛 Culture</button>
+          <button class="style-tag" onclick="togStyle(this)">🏖 Relaxation</button>
+          <button class="style-tag" onclick="togStyle(this)">💼 Business</button>
+        </div>
+        <div class="fnav"><button class="btn-back" onclick="prev(3)">← Back</button><button class="btn-next" onclick="next(3)">Next →</button></div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="fstep" id="s4">
+        <h3 class="fstep-title">Final details</h3>
+        <p class="fstep-sub">Almost there.</p>
+        <div class="form-row" style="margin-bottom:20px">
+          <div class="fgroup">
+            <label class="flabel">Departure city or airport</label>
+            <input class="finput" type="text" placeholder="e.g. New York (JFK)" id="departure">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Travel month</label>
+            <select class="finput" id="month">
+              <option value="" disabled selected>Select month</option>
+              <option>January</option><option>February</option><option>March</option>
+              <option>April</option><option>May</option><option>June</option>
+              <option>July</option><option>August</option><option>September</option>
+              <option>October</option><option>November</option><option>December</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgroup" style="margin-bottom:6px">
+          <label class="flabel">Do you have a destination in mind?</label>
+          <div class="dest-toggle">
+            <button class="active" id="tog-no" onclick="setDest('no')">Let AI recommend</button>
+            <button id="tog-yes" onclick="setDest('yes')">I know where I'm going</button>
+          </div>
+        </div>
+        <div id="dest-input" style="display:none;margin-bottom:4px">
+          <div class="fgroup">
+            <label class="flabel">Destination</label>
+            <input class="finput" type="text" placeholder="e.g. Tokyo, Japan" id="destination">
+          </div>
+        </div>
+        <div class="fnav"><button class="btn-back" onclick="prev(4)">← Back</button><button class="btn-next btn-generate" onclick="generate()">✦ Generate Itinerary</button></div>
+      </div>
+
+      <!-- Generating -->
+      <div class="gen-overlay" id="generating">
+        <div class="spinner"></div>
+        <div class="gen-text" id="gen-msg">Analyzing your preferences...</div>
+        <div class="gen-sub">Building your personalized travel plan</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" style="display:none">
+  <div class="results">
+    <div class="results-header">
+      <p class="eyebrow" style="justify-content:center;display:flex">✦ Your Personalized Plan</p>
+      <h2 class="section-title">Here's what we found</h2>
+      <p class="section-sub">Based on your preferences. Select a destination to lock in your itinerary.</p>
+    </div>
+
+    <!-- Destinations -->
+    <div class="rsec">
+      <div class="rsec-hd">
+        <h3 class="rsec-title">Destination Picks</h3>
+        <span class="rsec-count">3 recommendations</span>
+      </div>
+      <div class="dest-grid">
+
+        <div class="dest-card">
+          <div class="dest-img dest-img-1">
+            <div class="dest-flag">🇵🇹</div>
+            <div class="dest-badge">✓ Great Fit</div>
+          </div>
+          <div class="dest-body">
+            <h4 class="dest-name">Lisbon, Portugal</h4>
+            <p class="dest-why">A perfect blend of culture, food, and vibrant nightlife at a fraction of Western European prices. Easy access from US hubs keeps flights reasonable for the experience you get.</p>
+            <div class="dest-stats">
+              <div class="dstat"><div class="dstat-label">Flight (r/t)</div><div class="dstat-val">~$580/person</div></div>
+              <div class="dstat"><div class="dstat-label">Daily spend</div><div class="dstat-val">$120–$180/person</div></div>
+            </div>
+            <div class="dest-highlights">
+              <span class="dest-hl">Fado music bars and rooftop views in Alfama</span>
+              <span class="dest-hl">Time Out Market — best food hall in Europe</span>
+              <span class="dest-hl">Day trip to Sintra's fairy-tale palaces</span>
+            </div>
+          </div>
+          <div class="dest-footer">
+            <div class="season-badge"><div class="sdot sdot-ideal"></div>Ideal timing</div>
+            <button class="dest-select" onclick="pickDest(this,'Lisbon, Portugal')">Select →</button>
+          </div>
+        </div>
+
+        <div class="dest-card">
+          <div class="dest-img dest-img-2">
+            <div class="dest-flag">🇨🇴</div>
+            <div class="dest-badge">✓ Budget Friendly</div>
+          </div>
+          <div class="dest-body">
+            <h4 class="dest-name">Medellín, Colombia</h4>
+            <p class="dest-why">Year-round spring weather, a booming food scene, and one of the best nightlife circuits in South America — at remarkably low daily costs that stretch your budget further.</p>
+            <div class="dest-stats">
+              <div class="dstat"><div class="dstat-label">Flight (r/t)</div><div class="dstat-val">~$420/person</div></div>
+              <div class="dstat"><div class="dstat-label">Daily spend</div><div class="dstat-val">$70–$120/person</div></div>
+            </div>
+            <div class="dest-highlights">
+              <span class="dest-hl">El Poblado neighborhood for bars & restaurants</span>
+              <span class="dest-hl">Cable car up to Arví Park for hiking</span>
+              <span class="dest-hl">Salsa dancing classes and street art tours</span>
+            </div>
+          </div>
+          <div class="dest-footer">
+            <div class="season-badge"><div class="sdot sdot-ideal"></div>Ideal timing</div>
+            <button class="dest-select" onclick="pickDest(this,'Medellín, Colombia')">Select →</button>
+          </div>
+        </div>
+
+        <div class="dest-card">
+          <div class="dest-img dest-img-3">
+            <div class="dest-flag">🇹🇭</div>
+            <div class="dest-badge">✓ Top Pick</div>
+          </div>
+          <div class="dest-body">
+            <h4 class="dest-name">Bangkok, Thailand</h4>
+            <p class="dest-why">The ultimate food city with world-class street eats and rooftop restaurants side by side. Legendary nightlife, stunning temples, and easy island access make it a complete trip.</p>
+            <div class="dest-stats">
+              <div class="dstat"><div class="dstat-label">Flight (r/t)</div><div class="dstat-val">~$750/person</div></div>
+              <div class="dstat"><div class="dstat-label">Daily spend</div><div class="dstat-val">$80–$160/person</div></div>
+            </div>
+            <div class="dest-highlights">
+              <span class="dest-hl">Chatuchak Weekend Market — 15,000 stalls</span>
+              <span class="dest-hl">Rooftop bars at Lebua State Tower</span>
+              <span class="dest-hl">Day trip to Ayutthaya temples by train</span>
+            </div>
+          </div>
+          <div class="dest-footer">
+            <div class="season-badge"><div class="sdot sdot-shoulder"></div>Shoulder season</div>
+            <button class="dest-select" onclick="pickDest(this,'Bangkok, Thailand')">Select →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Activities -->
+    <div class="rsec">
+      <div class="rsec-hd">
+        <h3 class="rsec-title">Activities — <span id="dest-label">Lisbon, Portugal</span></h3>
+        <span class="rsec-count">8 activities</span>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-label">Type:</span>
+        <button class="ftab active" onclick="filterType('all',this)">All</button>
+        <button class="ftab" onclick="filterType('food',this)">Food</button>
+        <button class="ftab" onclick="filterType('culture',this)">Cultural</button>
+        <button class="ftab" onclick="filterType('adventure',this)">Adventure</button>
+        <button class="ftab" onclick="filterType('nightlife',this)">Nightlife</button>
+        <button class="ftab" onclick="filterType('relaxation',this)">Relaxation</button>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-label">Price:</span>
+        <button class="ftab active" onclick="filterPrice('all',this)">All</button>
+        <button class="ftab budget" onclick="filterPrice('budget',this)">Budget</button>
+        <button class="ftab mid" onclick="filterPrice('mid',this)">Mid-range</button>
+        <button class="ftab luxury" onclick="filterPrice('luxury',this)">Luxury</button>
+      </div>
+      <div class="act-grid" id="act-grid">
+
+        <div class="act-card" data-t="food" data-p="budget">
+          <div class="act-hd"><span class="type-badge tb-food">Food</span><span class="price-badge pb-budget">Budget</span></div>
+          <div class="act-name">Time Out Market</div>
+          <div class="act-why">A concentrated hit of Lisbon's best chefs in one hall — great for groups who want to graze and share rather than commit to one restaurant.</div>
+          <div class="act-footer"><span class="act-cost">~$20/person</span><a class="act-link" href="#">timeoutmarket.com ↗</a></div>
+        </div>
+
+        <div class="act-card" data-t="culture" data-p="budget">
+          <div class="act-hd"><span class="type-badge tb-culture">Cultural</span><span class="price-badge pb-budget">Budget</span></div>
+          <div class="act-name">Alfama Walking Tour</div>
+          <div class="act-why">Lisbon's oldest neighbourhood explored on foot with a local guide who knows the hidden viewpoints and Fado history. Best light before 11am.</div>
+          <div class="act-footer"><span class="act-cost">~$18/person</span><a class="act-link" href="#">lisbonwalker.com ↗</a></div>
+        </div>
+
+        <div class="act-card" data-t="adventure" data-p="budget">
+          <div class="act-hd"><span class="type-badge tb-adventure">Adventure</span><span class="price-badge pb-budget">Budget</span></div>
+          <div class="act-name">Sintra Day Trip</div>
+          <div class="act-why">A 40-minute train ride takes you to fairy-tale palaces and forested hills — one of Portugal's most stunning day trips at a very low cost.</div>
+          <div class="act-footer"><span class="act-cost">~$30/person</span><a class="act-link" href="#">cp.pt ↗</a></div>
+        </div>
+
+        <div class="act-card" data-t="nightlife" data-p="mid">
+          <div class="act-hd"><span class="type-badge tb-nightlife">Nightlife</span><span class="price-badge pb-mid">Mid-range</span></div>
+          <div class="act-name">Fado Show at Mesa de Frades</div>
+          <div class="act-why">Intimate Fado performances in a former chapel in Alfama — emotionally charged and uniquely Portuguese. Book well in advance; only 30 seats.</div>
+          <div class="act-footer"><span class="act-cost">~$45/person</span><a class="act-link" href="#">mesadefrades.pt ↗</a></div>
+        </div>
+
+        <div class="act-card" data-t="food" data-p="mid">
+          <div class="act-hd"><span class="type-badge tb-food">Food</span><span class="price-badge pb-mid">Mid-range</span></div>
+          <div class="act-name">Cervejaria Ramiro</div>
+          <div class="act-why">Lisbon's most legendary seafood restaurant — unpretentious, loud, and exceptional. The garlic prawns and percebes are non-negotiable.</div>
+          <div class="act-footer"><span class="act-cost">~$55/person</span><a class="act-link" href="#">cervejaria-ramiro.pt ↗</a></div>
+        </div>
+
+        <div class="act-card" data-t="relaxation" data-p="mid">
+          <div class="act-hd"><span class="type-badge tb-relaxation">Relaxation</span><span class="price-badge pb-mid">Mid-range</span></div>
+          <div class="act-name">Cascais Beach Day</div>
+          <div class="act-why">A 40-minute train ride west brings you to calm Atlantic beaches with a fishing-village atmosphere. The perfect rest day.</div>
+          <div class="act-footer"><span class="act-cost">~$15/person</span><a class="act-link" href="#">visitcascais.com ↗</a></div>
+        </div>
+
+        <div class="act-card" data-t="culture" data-p="luxury">
+          <div class="act-hd"><span class="type-badge tb-culture">Cultural</span><span class="price-badge pb-luxury">Luxury</span></div>
+          <div class="act-name">Private Tuk-Tuk City Tour</div>
+          <div class="act-why">A private 3-hour electric tuk-tuk tour customized to your interests — the best way to cover Belém, Alfama, and the viewpoints in style.</div>
+          <div class="act-footer"><span class="act-cost">~$120/group</span><a class="act-link" href="#">eco-tuktuklisboa.com ↗</a></div>
+        </div>
+
+        <div class="act-card" data-t="food" data-p="luxury">
+          <div class="act-hd"><span class="type-badge tb-food">Food</span><span class="price-badge pb-luxury">Luxury</span></div>
+          <div class="act-name">Dinner at Belcanto (2 Michelin Stars)</div>
+          <div class="act-why">Chef José Avillez's flagship reimagines Portuguese cuisine at the highest level. Reserve 6–8 weeks out. Worth every euro.</div>
+          <div class="act-footer"><span class="act-cost">~$180/person</span><a class="act-link" href="#">belcanto.pt ↗</a></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Hotels -->
+    <div class="rsec">
+      <div class="rsec-hd">
+        <h3 class="rsec-title">Hotels</h3>
+        <span class="rsec-count">6 options · 3 tiers</span>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-label">Tier:</span>
+        <button class="ftab active" onclick="filterHotels('all',this)">All</button>
+        <button class="ftab budget" onclick="filterHotels('budget',this)">Budget</button>
+        <button class="ftab mid" onclick="filterHotels('mid',this)">Mid-range</button>
+        <button class="ftab luxury" onclick="filterHotels('luxury',this)">Luxury</button>
+      </div>
+      <div class="hotel-grid">
+
+        <div class="hotel-card hbudget" data-tier="budget">
+          <div class="hotel-accent"></div>
+          <div class="hotel-body">
+            <div class="hotel-top">
+              <div><div class="hotel-name">Home Lisbon Hostel</div><span class="price-badge pb-budget" style="margin-top:6px;display:inline-block">Budget</span></div>
+              <div><div class="hotel-rate-num">$45</div><div class="hotel-rate-label">/ night</div></div>
+            </div>
+            <div class="hotel-loc">📍 Baixa, 10 min walk to Alfama</div>
+            <div class="hotel-for"><strong>Best for:</strong> Solo travelers, friend groups</div>
+            <button class="hotel-btn">View & Book</button>
+          </div>
+        </div>
+
+        <div class="hotel-card hbudget" data-tier="budget">
+          <div class="hotel-accent"></div>
+          <div class="hotel-body">
+            <div class="hotel-top">
+              <div><div class="hotel-name">Pensão Londres</div><span class="price-badge pb-budget" style="margin-top:6px;display:inline-block">Budget</span></div>
+              <div><div class="hotel-rate-num">$75</div><div class="hotel-rate-label">/ night</div></div>
+            </div>
+            <div class="hotel-loc">📍 Príncipe Real, walkable to Chiado</div>
+            <div class="hotel-for"><strong>Best for:</strong> Couples, solo travelers</div>
+            <button class="hotel-btn">View & Book</button>
+          </div>
+        </div>
+
+        <div class="hotel-card hmid" data-tier="mid">
+          <div class="hotel-accent"></div>
+          <div class="hotel-body">
+            <div class="hotel-top">
+              <div><div class="hotel-name">Hotel Bairro Alto</div><span class="price-badge pb-mid" style="margin-top:6px;display:inline-block">Mid-range</span></div>
+              <div><div class="hotel-rate-num">$180</div><div class="hotel-rate-label">/ night</div></div>
+            </div>
+            <div class="hotel-loc">📍 Chiado, steps from best restaurants</div>
+            <div class="hotel-for"><strong>Best for:</strong> Couples, small groups</div>
+            <button class="hotel-btn">View & Book</button>
+          </div>
+        </div>
+
+        <div class="hotel-card hmid" data-tier="mid">
+          <div class="hotel-accent"></div>
+          <div class="hotel-body">
+            <div class="hotel-top">
+              <div><div class="hotel-name">Memmo Alfama</div><span class="price-badge pb-mid" style="margin-top:6px;display:inline-block">Mid-range</span></div>
+              <div><div class="hotel-rate-num">$210</div><div class="hotel-rate-label">/ night</div></div>
+            </div>
+            <div class="hotel-loc">📍 Alfama, rooftop pool with Tagus views</div>
+            <div class="hotel-for"><strong>Best for:</strong> Couples, honeymooners</div>
+            <button class="hotel-btn">View & Book</button>
+          </div>
+        </div>
+
+        <div class="hotel-card hluxury" data-tier="luxury">
+          <div class="hotel-accent"></div>
+          <div class="hotel-body">
+            <div class="hotel-top">
+              <div><div class="hotel-name">Bairro Alto Hotel</div><span class="price-badge pb-luxury" style="margin-top:6px;display:inline-block">Luxury</span></div>
+              <div><div class="hotel-rate-num">$420</div><div class="hotel-rate-label">/ night</div></div>
+            </div>
+            <div class="hotel-loc">📍 Chiado, Lisbon's most storied address</div>
+            <div class="hotel-for"><strong>Best for:</strong> Couples, honeymooners, business</div>
+            <button class="hotel-btn">View & Book</button>
+          </div>
+        </div>
+
+        <div class="hotel-card hluxury" data-tier="luxury">
+          <div class="hotel-accent"></div>
+          <div class="hotel-body">
+            <div class="hotel-top">
+              <div><div class="hotel-name">Bela Vista Hotel & Spa</div><span class="price-badge pb-luxury" style="margin-top:6px;display:inline-block">Luxury</span></div>
+              <div><div class="hotel-rate-num">$380</div><div class="hotel-rate-label">/ night</div></div>
+            </div>
+            <div class="hotel-loc">📍 Cascais, 5-min walk to beach</div>
+            <div class="hotel-for"><strong>Best for:</strong> Couples, families seeking privacy</div>
+            <button class="hotel-btn">View & Book</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Itinerary -->
+    <div class="rsec">
+      <div class="rsec-hd">
+        <h3 class="rsec-title">Day-by-Day Itinerary</h3>
+        <span class="rsec-count">7 days</span>
+      </div>
+      <div class="itin-days">
+
+        <div class="day-card open">
+          <div class="day-hd" onclick="togDay(this)">
+            <div class="day-hd-left">
+              <div class="day-num">1</div>
+              <div><div class="day-theme">Arrival & First Impressions</div><div class="day-spend">Est. $40–$80/person · Light day</div></div>
+            </div>
+            <span class="day-chevron">▼</span>
+          </div>
+          <div class="day-body">
+            <div class="day-slot">
+              <div class="slot-time">Morning</div>
+              <div><div class="slot-act">Arrive at LIS, check in</div><div class="slot-notes">Allow time for transit. Grab a pastel de nata from the Antiga Confeitaria de Belém.</div></div>
+              <div class="slot-cost">—</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Afternoon</div>
+              <div><div class="slot-act">Wander Chiado & Baixa</div><div class="slot-notes">Self-guided. Hit Livraria Bertrand (world's oldest bookshop) and Praça do Comércio.</div></div>
+              <div class="slot-cost">Free</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Evening</div>
+              <div><div class="slot-act">Dinner at Time Out Market</div><div class="slot-notes">No reservations needed. A relaxed intro to Lisbon's food scene.</div></div>
+              <div class="slot-cost">~$20</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="day-card">
+          <div class="day-hd" onclick="togDay(this)">
+            <div class="day-hd-left">
+              <div class="day-num">2</div>
+              <div><div class="day-theme">Alfama & Fado</div><div class="day-spend">Est. $80–$120/person</div></div>
+            </div>
+            <span class="day-chevron">▼</span>
+          </div>
+          <div class="day-body">
+            <div class="day-slot">
+              <div class="slot-time">Morning</div>
+              <div><div class="slot-act">Alfama Walking Tour</div><div class="slot-notes">Book with Lisbon Walker. Best photography light before 11am.</div></div>
+              <div class="slot-cost">~$18</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Afternoon</div>
+              <div><div class="slot-act">São Jorge Castle + Miradouro da Graça</div><div class="slot-notes">Panoramic views of the Tagus and old city. Allow 2 hours.</div></div>
+              <div class="slot-cost">~$12</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Evening</div>
+              <div><div class="slot-act">Fado Show at Mesa de Frades</div><div class="slot-notes">Dinner included. Reserve in advance — only 30 seats.</div></div>
+              <div class="slot-cost">~$45</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="day-card">
+          <div class="day-hd" onclick="togDay(this)">
+            <div class="day-hd-left">
+              <div class="day-num">3</div>
+              <div><div class="day-theme">Sintra Day Trip</div><div class="day-spend">Est. $60–$90/person</div></div>
+            </div>
+            <span class="day-chevron">▼</span>
+          </div>
+          <div class="day-body">
+            <div class="day-slot">
+              <div class="slot-time">Morning</div>
+              <div><div class="slot-act">Train to Sintra (depart 8:30am)</div><div class="slot-notes">40 min from Rossio station. Buy return tickets at the machine.</div></div>
+              <div class="slot-cost">~$8</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Afternoon</div>
+              <div><div class="slot-act">Pena Palace & Moorish Castle</div><div class="slot-notes">Shuttle bus up from town center. Combo ticket saves money.</div></div>
+              <div class="slot-cost">~$22</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Evening</div>
+              <div><div class="slot-act">Return to Lisbon — dinner in Príncipe Real</div><div class="slot-notes">Quieter than Chiado. Try O Corvo for natural wine.</div></div>
+              <div class="slot-cost">~$35</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="day-card">
+          <div class="day-hd" onclick="togDay(this)">
+            <div class="day-hd-left">
+              <div class="day-num">4</div>
+              <div><div class="day-theme">Belém & Culture</div><div class="day-spend">Est. $70–$100/person</div></div>
+            </div>
+            <span class="day-chevron">▼</span>
+          </div>
+          <div class="day-body">
+            <div class="day-slot">
+              <div class="slot-time">Morning</div>
+              <div><div class="slot-act">Jerónimos Monastery + Tower of Belém</div><div class="slot-notes">UNESCO sites. Arrive before 10am. Free first Sunday of the month.</div></div>
+              <div class="slot-cost">~$18</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Afternoon</div>
+              <div><div class="slot-act">MAAT Museum</div><div class="slot-notes">Contemporary art on the Tagus waterfront. Strong permanent collection.</div></div>
+              <div class="slot-cost">~$10</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Evening</div>
+              <div><div class="slot-act">Dinner at Cervejaria Ramiro</div><div class="slot-notes">Legendary seafood. Queue outside or book by phone.</div></div>
+              <div class="slot-cost">~$55</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="day-card">
+          <div class="day-hd" onclick="togDay(this)">
+            <div class="day-hd-left">
+              <div class="day-num">5</div>
+              <div><div class="day-theme">Flex / Rest Day</div><div class="day-spend">Est. $30–$60/person · Light</div></div>
+            </div>
+            <span class="day-chevron">▼</span>
+          </div>
+          <div class="day-body">
+            <div class="day-slot">
+              <div class="slot-time">Morning</div>
+              <div><div class="slot-act">Slow morning — LX Factory market</div><div class="slot-notes">Open Sundays. Independent shops, food stalls, vintage finds.</div></div>
+              <div class="slot-cost">Free–$15</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Afternoon</div>
+              <div><div class="slot-act">Cascais beach day</div><div class="slot-notes">40-min train west. Great if the weather cooperates.</div></div>
+              <div class="slot-cost">~$15</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Evening</div>
+              <div><div class="slot-act">Private Tuk-Tuk sunset tour</div><div class="slot-notes">Best views as golden light hits the Tagus. Book in advance.</div></div>
+              <div class="slot-cost">~$40</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="day-card">
+          <div class="day-hd" onclick="togDay(this)">
+            <div class="day-hd-left">
+              <div class="day-num">6</div>
+              <div><div class="day-theme">Splurge Day</div><div class="day-spend">Est. $220–$280/person</div></div>
+            </div>
+            <span class="day-chevron">▼</span>
+          </div>
+          <div class="day-body">
+            <div class="day-slot">
+              <div class="slot-time">Morning</div>
+              <div><div class="slot-act">Spa morning</div><div class="slot-notes">Corinthia Lisbon spa if not at a hotel with one. Book the day before.</div></div>
+              <div class="slot-cost">~$60</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Afternoon</div>
+              <div><div class="slot-act">Shopping in Príncipe Real</div><div class="slot-notes">Independent boutiques for fashion, ceramics, and cork goods.</div></div>
+              <div class="slot-cost">As desired</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Evening</div>
+              <div><div class="slot-act">Dinner at Belcanto (2 Michelin Stars)</div><div class="slot-notes">Reserve 6–8 weeks ahead. 10-course tasting menu. Unforgettable.</div></div>
+              <div class="slot-cost">~$180</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="day-card">
+          <div class="day-hd" onclick="togDay(this)">
+            <div class="day-hd-left">
+              <div class="day-num">7</div>
+              <div><div class="day-theme">Departure Day</div><div class="day-spend">Est. $20–$40/person · Light</div></div>
+            </div>
+            <span class="day-chevron">▼</span>
+          </div>
+          <div class="day-body">
+            <div class="day-slot">
+              <div class="slot-time">Morning</div>
+              <div><div class="slot-act">Final pastel de nata + coffee</div><div class="slot-notes">One last ritual before heading out.</div></div>
+              <div class="slot-cost">~$5</div>
+            </div>
+            <div class="day-slot">
+              <div class="slot-time">Afternoon</div>
+              <div><div class="slot-act">Transfer to Humberto Delgado Airport (LIS)</div><div class="slot-notes">Metro red line direct from Oriente. 30 min. Allow 2.5 hours for international flights.</div></div>
+              <div class="slot-cost">~$2</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Budget Summary -->
+    <div class="rsec">
+      <div class="rsec-hd">
+        <h3 class="rsec-title">Budget Summary</h3>
+        <span class="rsec-count">Per person · 7 days · 2 travelers</span>
+      </div>
+      <div class="budget-wrap">
+        <table class="btable">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th class="bc">Budget Tier</th>
+              <th class="mc">Mid-Range</th>
+              <th class="lc">Luxury</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Flights (r/t per person)</td><td class="bc">$580</td><td class="mc">$580</td><td class="lc">$1,200</td></tr>
+            <tr><td>Hotel (7 nights)</td><td class="bc">$315</td><td class="mc">$1,260</td><td class="lc">$2,940</td></tr>
+            <tr><td>Activities (total)</td><td class="bc">$180</td><td class="mc">$280</td><td class="lc">$520</td></tr>
+            <tr><td>Food & Drink (7 days)</td><td class="bc">$280</td><td class="mc">$490</td><td class="lc">$980</td></tr>
+            <tr><td>Local Transport</td><td class="bc">$60</td><td class="mc">$100</td><td class="lc">$200</td></tr>
+            <tr class="total"><td>Total per person</td><td class="bc">$1,415</td><td class="mc">$2,710</td><td class="lc">$5,840</td></tr>
+            <tr class="total"><td>Total for group (2)</td><td class="bc">$2,830</td><td class="mc">$5,420</td><td class="lc">$11,680 <span class="over-tag">Over budget</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">✈ Waypoint</div>
+  <p class="footer-text">AI-powered travel planning. All cost estimates are approximations based on typical pricing. Always verify before booking.</p>
+</footer>
+
+<script>
+let typeFilter = 'all', priceFilter = 'all';
+
+function selTraveler(btn, type) {
+  document.querySelectorAll('.traveler-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('ages-group').style.display = type === 'family' ? 'block' : 'none';
+}
+
+function togStyle(btn) { btn.classList.toggle('sel'); }
+
+function setDest(v) {
+  document.getElementById('tog-yes').classList.toggle('active', v === 'yes');
+  document.getElementById('tog-no').classList.toggle('active', v === 'no');
+  document.getElementById('dest-input').style.display = v === 'yes' ? 'block' : 'none';
+}
+
+function next(from) {
+  const d = document.getElementById('d' + from);
+  d.classList.remove('active'); d.classList.add('done'); d.textContent = '✓';
+  document.getElementById('l' + from).classList.add('done');
+  document.getElementById('s' + from).classList.remove('active');
+  const nd = document.getElementById('d' + (from + 1));
+  if (nd) nd.classList.add('active');
+  const ns = document.getElementById('s' + (from + 1));
+  if (ns) ns.classList.add('active');
+}
+
+function prev(from) {
+  document.getElementById('s' + from).classList.remove('active');
+  const d = document.getElementById('d' + (from - 1));
+  d.classList.remove('done'); d.classList.add('active'); d.textContent = from - 1;
+  document.getElementById('l' + (from - 1)).classList.remove('done');
+  document.getElementById('d' + from).classList.remove('active');
+  document.getElementById('s' + (from - 1)).classList.add('active');
+}
+
+function generate() {
+  document.getElementById('s4').classList.remove('active');
+  const gen = document.getElementById('generating');
+  gen.classList.add('active');
+  const msgs = ['Analyzing your preferences...','Checking flights from your city...','Evaluating destinations for your month...','Building activity recommendations...','Assembling your day-by-day itinerary...'];
+  let i = 0;
+  const el = document.getElementById('gen-msg');
+  const iv = setInterval(() => { if (++i < msgs.length) el.textContent = msgs[i]; }, 750);
+  setTimeout(() => {
+    clearInterval(iv);
+    gen.classList.remove('active');
+    document.querySelector('.form-section').style.display = 'none';
+    const r = document.getElementById('results');
+    r.style.display = 'block';
+    r.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 4000);
+}
+
+function pickDest(btn, name) {
+  document.querySelectorAll('.dest-select').forEach(b => { b.textContent = 'Select →'; b.classList.remove('chosen'); });
+  btn.textContent = '✓ Selected'; btn.classList.add('chosen');
+  document.getElementById('dest-label').textContent = name;
+}
+
+function filterType(t, btn) {
+  typeFilter = t;
+  btn.closest('.filter-bar').querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyActFilters();
+}
+
+function filterPrice(p, btn) {
+  priceFilter = p;
+  btn.closest('.filter-bar').querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyActFilters();
+}
+
+function applyActFilters() {
+  document.querySelectorAll('.act-card').forEach(c => {
+    const show = (typeFilter === 'all' || c.dataset.t === typeFilter) && (priceFilter === 'all' || c.dataset.p === priceFilter);
+    c.style.display = show ? '' : 'none';
+  });
+}
+
+function filterHotels(tier, btn) {
+  btn.closest('.filter-bar').querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.hotel-card').forEach(c => {
+    c.style.display = tier === 'all' || c.dataset.tier === tier ? '' : 'none';
+  });
+}
+
+function togDay(hd) { hd.closest('.day-card').classList.toggle('open'); }
+</script>
+</body>
+</html>
